@@ -13,17 +13,30 @@
   </div>
 
   <script>
-  let totalSeconds = 30 * 60;
+  const DURATION = 30 * 60 * 1000; // 30 минут в миллисекундах
+  const STORAGE_KEY = "timerStartTime";
+
+  // если есть сохранённое время старта — берём его, иначе создаём новое
+  let startTime = localStorage.getItem(STORAGE_KEY);
+  if (!startTime) {
+    startTime = Date.now();
+    localStorage.setItem(STORAGE_KEY, startTime);
+  } else {
+    startTime = parseInt(startTime, 10);
+  }
 
   function updateTimer() {
+    const elapsed = Date.now() - startTime;
+    const remaining = Math.max(0, DURATION - elapsed);
+
+    const totalSeconds = Math.floor(remaining / 1000);
     const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
     const seconds = String(totalSeconds % 60).padStart(2, '0');
     document.getElementById('timer').textContent = `${minutes}:${seconds}`;
 
-    if (totalSeconds > 0) {
-      totalSeconds--;
-    } else {
+    if (remaining <= 0) {
       clearInterval(timerInterval);
+      localStorage.removeItem(STORAGE_KEY); // сбросить при окончании
     }
   }
 
